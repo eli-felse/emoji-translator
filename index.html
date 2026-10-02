@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emoji Translator</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Emoji Translator 🔮</h1>
+      <p class="subtitle">Type a phrase and watch it turn into emojis, in real time.</p>
+    </header>
+
+    <main>
+      <section class="input-section" aria-label="Translate text to emojis">
+        <label for="text-input">Your text</label>
+        <textarea
+          id="text-input"
+          rows="3"
+          placeholder="Try typing: hello, thank you, I love pizza..."
+          aria-describedby="result-display"
+        ></textarea>
+
+        <div class="result-area">
+          <label for="result-display">Emoji translation</label>
+          <div id="result-display" class="result-display" role="status" aria-live="polite">
+            <span class="placeholder">Your emoji translation will appear here ✨</span>
+          </div>
+        </div>
+
+        <button id="save-btn" type="button" disabled>⭐ Save to Favorites</button>
+      </section>
+
+      <section class="history-section" aria-label="Recent and favorite translations">
+        <div class="tabs" role="tablist">
+          <button class="tab-btn active" id="tab-recent" role="tab" aria-selected="true" aria-controls="recent-list">Recent</button>
+          <button class="tab-btn" id="tab-favorites" role="tab" aria-selected="false" aria-controls="favorites-list">Favorites</button>
+        </div>
+
+        <ul id="recent-list" class="list" role="tabpanel" aria-labelledby="tab-recent"></ul>
+        <ul id="favorites-list" class="list hidden" role="tabpanel" aria-labelledby="tab-favorites"></ul>
+
+        <p class="empty-msg hidden" id="empty-msg">Nothing here yet.</p>
+      </section>
+    </main>
+
+    <footer>
+      <p>Made by Eli</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
