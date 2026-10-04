@@ -34,9 +34,12 @@
       </section>
 
       <section class="history-section" aria-label="Recent and favorite translations">
-        <div class="tabs" role="tablist">
-          <button class="tab-btn active" id="tab-recent" role="tab" aria-selected="true" aria-controls="recent-list">Recent</button>
-          <button class="tab-btn" id="tab-favorites" role="tab" aria-selected="false" aria-controls="favorites-list">Favorites</button>
+        <div class="history-controls">
+          <div class="tabs" role="tablist">
+            <button class="tab-btn active" id="tab-recent" role="tab" aria-selected="true" aria-controls="recent-list">Recent</button>
+            <button class="tab-btn" id="tab-favorites" role="tab" aria-selected="false" aria-controls="favorites-list">Favorites</button>
+          </div>
+          <button id="clear-history-btn" type="button" class="clear-btn" title="Clear recent history" aria-label="Clear recent history">🗑️ Clear</button>
         </div>
 
         <ul id="recent-list" class="list" role="tabpanel" aria-labelledby="tab-recent"></ul>

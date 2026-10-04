@@ -6,21 +6,51 @@
   // ones so "thank you" wins over "you", etc.
   // ---------------------------------------------------------------------
   var DICTIONARY = {
-    'thank you': '🙏',
-    'thanks': '🙏',
+    'thank you': {
+      base: '🙏',
+      contextual: [
+        { pattern: /\b(so much|very much|really|a lot|so very much)\b/i, emoji: '🙏🏽' }
+      ]
+    },
+    'thanks': {
+      base: '🙏',
+      contextual: [
+        { pattern: /\b(so much|very much|really|a lot)\b/i, emoji: '🙏🏽' }
+      ]
+    },
     'good morning': '☀️🌅',
     'good night': '🌙😴',
     'good evening': '🌆',
-    'i love you': '❤️',
+    'i love you': {
+      base: '❤️',
+      contextual: [
+        { pattern: /\b(so much|forever|always|with all my heart)\b/i, emoji: '💞' }
+      ]
+    },
     'i love': '😍',
     'love': '❤️',
-    'happy birthday': '🎉🎂',
+    'happy birthday': {
+      base: '🎉🎂',
+      contextual: [
+        { pattern: /\b(best|amazing|wonderful)\b/i, emoji: '🥳🎂' }
+      ]
+    },
     'congratulations': '🎉👏',
     'see you later': '👋⏰',
     'see you': '👋',
     'good luck': '🤞',
-    'i am sorry': '😔',
-    'sorry': '😔',
+    'i am sorry': {
+      base: '😔',
+      contextual: [
+        { pattern: /\b(so|really|deeply|truly)\b/i, emoji: '🙏😔' }
+      ]
+    },
+    'sorry': {
+      base: '😔',
+      contextual: [
+        { pattern: /\b(so|really|deeply|truly)\b/i, emoji: '🙏😔' }
+      ]
+    },
     'i am happy': '😄',
     'i am sad': '😢',
     'i am tired': '😴',
@@ -111,10 +141,16 @@
     'cat': '🐱',
     'bird': '🐦',
     'fish': '🐟',
-    'love you': '❤️',
+    'love you': {
+      base: '❤️',
+      contextual: [
+        { pattern: /\b(so much|forever|always)\b/i, emoji: '💞' }
+      ]
+    },
     'heart': '❤️',
     'kiss': '😘',
     'hug': '🤗',
+    'here for you': '🤗',
     'friend': '🧑‍🤝‍🧑',
     'friends': '🧑‍🤝‍🧑',
     'family': '👨‍👩‍👧‍👦',
@@ -200,6 +236,24 @@
     'right': '➡️'
   };
 
+  // Mirror common apostrophe contractions onto their existing "spelled out"
+  // phrases so casual typing ("I'm sorry") matches the same entry as the
+  // formal form ("I am sorry") already in the dictionary above.
+  var CONTRACTION_MIRRORS = {
+    'i\'m sorry': 'i am sorry',
+    'i\'m happy': 'i am happy',
+    'i\'m sad': 'i am sad',
+    'i\'m tired': 'i am tired',
+    'i\'m hungry': 'i am hungry',
+    'i\'m angry': 'i am angry',
+    'i\'m scared': 'i am scared',
+    'i\'m here for you': 'here for you',
+    'i am here for you': 'here for you'
+  };
+  Object.keys(CONTRACTION_MIRRORS).forEach(function (contraction) {
+    DICTIONARY[contraction] = DICTIONARY[CONTRACTION_MIRRORS[contraction]];
+  });
+
   // Pre-sort dictionary keys by word count (desc) then length (desc) so
   // multi-word phrases are always attempted before single words.
   var SORTED_KEYS = Object.keys(DICTIONARY).sort(function (a, b) {
@@ -218,10 +272,35 @@
     'gi'
   );
 
+  // Some phrases have more than one "correct" emoji depending on the rest
+  // of the sentence (e.g. an intensifier like "so much"). Entries can be a
+  // plain emoji string, or an object with a base emoji plus a list of
+  // contextual overrides checked against the full input text.
+  function resolveEmoji(entry, fullText) {
+    if (typeof entry === 'string') return entry;
+    var contextual = entry.contextual;
+    for (var i = 0; i < contextual.length; i++) {
+      if (contextual[i].pattern.test(fullText)) {
+        return contextual[i].emoji;
+      }
+    }
+    return entry.base;
+  }
+
+  // Normalize curly/typographic apostrophes (e.g. from iOS auto-correct) to
+  // a plain straight apostrophe so contractions like "I'm" match regardless
+  // of which apostrophe character was typed.
+  function normalizeApostrophes(text) {
+    return text.replace(/[\u2018\u2019]/g, '\'');
+  }
+
   function translateToEmoji(text) {
     if (!text) return '';
-    return text.replace(PATTERN, function (match) {
-      return DICTIONARY[match.toLowerCase()] || match;
+    var normalized = normalizeApostrophes(text);
+    return normalized.replace(PATTERN, function (match) {
+      var entry = DICTIONARY[match.toLowerCase()];
+      if (entry === undefined) return match;
+      return resolveEmoji(entry, normalized);
     });
   }
 
@@ -230,7 +309,7 @@
   // ---------------------------------------------------------------------
   var RECENT_KEY = 'emojiTranslator_recent';
   var FAVORITES_KEY = 'emojiTranslator_favorites';
-  var MAX_RECENT = 15;
+  var MAX_RECENT = 10;
 
   function loadList(key) {
     try {
@@ -261,6 +340,7 @@
   var tabRecent = document.getElementById('tab-recent');
   var tabFavorites = document.getElementById('tab-favorites');
   var emptyMsg = document.getElementById('empty-msg');
+  var clearHistoryBtn = document.getElementById('clear-history-btn');
 
   var currentTranslation = '';
   var historyDebounceTimer = null;
@@ -396,6 +476,11 @@
     renderLists();
   }
 
+  function clearRecent() {
+    saveList(RECENT_KEY, []);
+    renderLists();
+  }
+
   // ---------------------------------------------------------------------
   // Events
   // ---------------------------------------------------------------------
@@ -423,6 +508,7 @@
     tabFavorites.setAttribute('aria-selected', 'false');
     recentList.classList.remove('hidden');
     favoritesList.classList.add('hidden');
+    clearHistoryBtn.classList.remove('hidden');
     renderLists();
   });
 
@@ -433,8 +519,11 @@
     tabRecent.setAttribute('aria-selected', 'false');
     favoritesList.classList.remove('hidden');
     recentList.classList.add('hidden');
+    clearHistoryBtn.classList.add('hidden');
     renderLists();
   });
+
+  clearHistoryBtn.addEventListener('click', clearRecent);
 
   // ---------------------------------------------------------------------
   // Init

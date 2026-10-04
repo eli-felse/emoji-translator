@@ -1,6 +1,6 @@
-# Emoji Translator
+# Emoji Translator Updates
 
-A web app that converts typed text into emojis in real time as you type, recognizing common words and phrases like 'hello' or 'thank you'. It keeps a running history of recent translations and lets you save favorites for later, all stored locally in your browser.
+A web app that converts typed text into emojis in real time as you type, recognizing common words, phrases, and contractions like 'hello', 'thank you', or 'I'm here for you'. Some phrases pick a context-aware emoji variant based on surrounding words (e.g. 'thank you so much' gets a warmer emoji than a plain 'thank you'). It keeps a running history of the last 10 translations, with a one-click button to clear it, and lets you save favorites for later, all stored locally in your browser.
 
 **Tags:** html, css, javascript
 
